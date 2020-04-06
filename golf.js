@@ -28,12 +28,16 @@ selected={x:-1, y:-1}
 
 //
 
-friction=0
-ball={x:500, y:500, dir:0, spd:0}
-stick={start:{x:0,y:0}, end:{x:0,y:0}, power:0, type:1, dir:0}
+ball={pos:{x:500,y:500}, spd:{x:0,y:0}}
+stick={start:{x:0,y:0}, end:{x:0,y:0}, pos:{x:0,y:0}, power:0, type:1}
 shooting=0
+shot=0
 holes={current:1,total:18}
 score=Array(18).fill(0)
+shot_dis=0
+shot_deltax=0
+shot_deltay=0
+power_mov_mod=0
 
 //Mobile detection
 
@@ -103,13 +107,15 @@ function draw_line(x1,y1,x2,y2)
 
 function draw_circle(x,y,size,colour="white",alpha=1)
 {
-  pa=ctx.globalAlpha;
+  var pa=ctx.globalAlpha;
+  var pc=ctx.fillStyle;
   if (colour!="black"){ctx.globalAlpha=alpha;}
   ctx.strokeStyle=colour;
   ctx.beginPath();
   ctx.arc(x, y, size, 0, 2*Math.PI, true);
   ctx.stroke();
   ctx.globalAlpha=pa;
+  ctx.fillStyle=pc
 }
 
 function fill_circle(x,y,size,colour="white",alpha=1)
@@ -296,6 +302,120 @@ function settings()
   if (anistep<30){anistep++;}
 }
 
+//Calculations
+
+function distance(a,b)
+{
+  return Math.sqrt(Math.pow((b.x-a.x),2)+Math.pow((b.y-a.y),2))
+}
+
+//Angle is in *radians*
+function angle(a,b)
+{
+  return Math.atan2(b.y-a.y,b.x-a.x)
+}
+
+//ke*q1*q2
+const stick_ball_data=Number("9E9")*Number("1.6E-19")*Number("1.6E-19")
+function stick_force()
+{
+  //function for stick and ball only. Returns Newtons on ball.
+  //F= ke (q1*q2) /r2
+  //ke: coulomb's constant (9e9)
+  //qm1/qm2 -> charges. Ball is 1.6e-19C. stick is 1.6e-19*type
+  // r-> separation (1px -> 1nm in this model)
+  //I swear to god, if someone opens a GH issue complaining about this
+  //not being accurate I'm going to flip a shit. IT'S GOOD ENOUGH.
+
+  //Force magnitude:
+  var dist_m=distance(ball.pos,stick.pos)/1000000000
+  var force=(stick_ball_data*stick.type)/Math.pow(dist_m,2)
+
+  //Force component in x and y
+  var vang=angle(ball.pos,stick.pos)
+  var fx=force*Math.cos(vang)
+  var fy=force*Math.sin(vang)
+
+  return {ft:force, fx:fx, fy:fy}
+}
+
+//rolling friction of """ball""" on """floor"""
+//F=uN (F=umg) (u: coefficient of friction, n:normal force)
+//F=u*p_mass*9.8. 
+//U is stored in the friction data of the level
+const p_mass=Number("1.67E-27")
+const fric_const=p_mass*9800000000//g in nm/s
+function friction()
+{
+  //Calculate angle of movement
+  var frang=Math.atan2(-ball.spd.y,-ball.spd.x)
+
+  //Calculate total friction
+  var tfforce=1*fric_const
+
+  //Decompose friction into x/y components
+  var tfx=tfforce*Math.cos(frang)
+  var tfy=tfforce*Math.sin(frang)
+
+
+  return {fx:tfx, fy:tfy}
+}
+
+function environmental_force()
+{
+  var eforce={fx:0, fy:0}
+  //TO-DO: Calculate force for simple walls
+  //TO-DO: Calculate force for constant magnetic fields
+  //TO-DO: Calculate force for point particles in field
+  var fric=friction()
+  eforce.fx+=fric.fx
+  eforce.fy+=fric.fy
+  
+  console.log(eforce)
+  return eforce
+}
+
+function force_on_ball()
+{
+  var tforce={fx:0, fy:0}
+  if(stick.pos.x!=0)
+  {
+    var st_force=stick_force()
+    tforce.fx+=st_force.fx
+    tforce.fy+=st_force.fy
+  }
+  env_force=environmental_force()
+  tforce.fx+=env_force.fx
+  tforce.fy+=env_force.fy
+
+  return tforce
+}
+
+//F=ma; a=F/m; ax=Fx/m
+//Proton mass 1.67e-27
+//m/s converted to nm/s, then reduced to tick time (1/30s)
+//Final acc values are in nm/cycle, equivalent to px/cycle
+//displacement d=v0t+(0.5*at^2).
+//v0=initial speed
+//a=acceleration
+//t=time (Always 1/30)
+//d=v0/30 + a/2000
+function move_ball()
+{
+  //Find acceleration on a given frame
+  var tforce=force_on_ball()
+  var acc_x=-tforce.fx/(p_mass*30*1000000000)
+  var acc_y=-tforce.fy/(p_mass*30*1000000000)
+  //Update ball speed
+  ball.spd.x+=acc_x 
+  ball.spd.y+=acc_y
+  //move ball
+  ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
+  ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
+}
+
+//Drawing
+
 function draw_power()
 {
   for(i=0;i<100;i++)
@@ -317,8 +437,6 @@ function draw_tgt(x,y)
   draw_line(x-5,y,x+5,y)
   draw_line(x,y+5,x,y-5)
   ctx.lineWidth=1
-  var r=stick.type*2
-  draw_circle(x+7,y-7,r)
 }
 
 function draw_point(x,y)
@@ -330,12 +448,18 @@ function draw_point(x,y)
 
 function draw_ball()
 {
-  fill_circle(ball.x,ball.y,5)
+  fill_circle(ball.pos.x,ball.pos.y,5)
 }
 
 function draw_hole()
 {
   draw_circle(hole.x,hole.y,10)
+}
+
+function draw_stick(x,y)
+{
+  fill_circle(x,y,5,"red")
+  ctx.fillStyle="white"
 }
 
 function draw_ui()
@@ -359,11 +483,13 @@ function draw_ui()
   ctx.strokeRect(310,1010,80,80)
   ctx.strokeStyle="white"
 
-  ctx.fillText("NORM",250,1055)
   ctx.fillText("MENU",50,1055)
-  ctx.fillText("SMOL",150,1055)
-  ctx.fillText("BIG",350,1055)
-
+  ctx.fillText("SMOL",150,1050)
+  ctx.fillText("+",150,1070)
+  ctx.fillText("NORM",250,1050)
+  ctx.fillText("++",250,1070)
+  ctx.fillText("BIG",350,1050)
+  ctx.fillText("+++",350,1070)
   draw_power()
 
   ctx.strokeRect(910,1010,80,80)
@@ -383,24 +509,48 @@ function main_loop()
   draw_ball()
   draw_hole()
 
-  if(stick.start.x!=0)
+  if(stick.start.x!=0 && shot==0)
   {
     draw_point(stick.start.x,stick.start.y)
   }
-  if(stick.end.x!=0)
+  if(stick.end.x!=0 && shot==0)
   {
     draw_point(stick.end.x,stick.end.y)
     draw_line(stick.start.x,stick.start.y,stick.end.x,stick.end.y)
   }
 
-  if(shooting!=0)
+  if(shooting!=0 && shot==0)
   {
     stick.power+=((stick.power/4)+20)*shooting
     if(stick.power>1000){shooting=-1; stick.power=999}
     else if(stick.power<0){shooting=1; stick.power=1}
   }
 
+  if(shot>0)
+  {
+    draw_stick(stick.start.x+shot_deltax*shot,stick.start.y+shot_deltay*shot)
+    stick.pos.x+=shot_deltax
+    stick.pos.y+=shot_deltay
+    move_ball()
 
+    shot+=1
+    if
+    (
+      ((stick.start.x<stick.end.x) && (stick.end.x<stick.start.x+shot_deltax*shot)) 
+    ||((stick.start.x>stick.end.x) && (stick.end.x>stick.start.x+shot_deltay*shot))
+    )
+    {
+      shot=0
+      shooting=0
+      stick.power=0
+      stick.start={x:0, y:0}
+      stick.end={x:0, y:0}
+    }
+  }
+  if(ball.spd.x!=0 || ball.spd.y!=0)
+  {
+    move_ball()
+  }
 }
 
 //Listeners
@@ -607,9 +757,14 @@ function mousedown(e)
         stick.end.y=mouse_pos.y
         shooting=1
       }
-      else if(shooting!=0)
+      else if(shooting!=0 && shot==0)
       {
-        shooting=0
+        shot=1
+        stick.pos=stick.start
+        shot_dis=distance(stick.start,stick.end)
+        power_mov_mod=(1100-stick.power)/30
+        shot_deltax=(stick.end.x-stick.start.x)/power_mov_mod
+        shot_deltay=(stick.end.y-stick.start.y)/power_mov_mod
         console.log("bam!",parseInt(stick.power),"/1000")
       }
     }
@@ -617,7 +772,7 @@ function mousedown(e)
   //right click
   else if(e.buttons==2)
   {
-    if (mouse_coords.y<10)
+    if (mouse_coords.y<10 && shot==0)
     {
       if(stick.end.x!=0)
       {
@@ -661,6 +816,9 @@ ctx.canvas.addEventListener('mousemove', function(e){
 //ctx.canvas.addEventListener("click", skip_to_menu);
 //loader()
 //ani=setInterval(logo_animation, interval, 1);
+
+
+//test zone
 
 document.getElementById('golf').style.cursor = "none";
 ctx.canvas.addEventListener("mousemove", dragmove, false)
