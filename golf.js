@@ -344,7 +344,8 @@ function stick_force()
 //rolling friction of """ball""" on """floor"""
 //F=uN (F=umg) (u: coefficient of friction, n:normal force)
 //F=u*p_mass*9.8. 
-//U is stored in the friction data of the level
+//U is stored in the friction data of the level.
+//50 feels like normal
 const p_mass=Number("1.67E-27")
 const fric_const=p_mass*9800000000//g in nm/s
 function friction()
@@ -353,7 +354,7 @@ function friction()
   var frang=Math.atan2(ball.spd.y,ball.spd.x)
 
   //Calculate total friction
-  var tfforce=50*fric_const //Test u
+  var tfforce=50*fric_const
 
   //Decompose friction into x/y components
   var tfx=tfforce*Math.cos(frang)
@@ -378,7 +379,7 @@ function environmental_force()
 function force_on_ball()
 {
   var tforce={fx:0, fy:0}
-  if(stick.pos.x!=0)
+  if(stick.start.x!=0)
   {
     var st_force=stick_force()
     tforce.fx+=st_force.fx
@@ -409,19 +410,55 @@ function move_ball()
   //Update ball speed
   ball.spd.x+=acc_x 
   ball.spd.y+=acc_y
-  //Prevent jittering
-  if(Math.sign(ball.prev_spd.x)!=0 && (Math.sign(ball.spd.x)!=Math.sign(ball.prev_spd.x)))
+
+  //bouncing
+  var flipped=0
+  if(ball.pos.x<0 || ball.pos.x>1000)
   {
-    ball.spd.x=0
+    ball.spd.x=-ball.spd.x
+    flipped=1
+    if(ball.pos.x<0)
+    {
+      ball.pos.x=0
+    }
+    if(ball.pos.x>1000)
+    {
+      ball.pos.x=1000
+    }
   }
-  if(Math.sign(ball.prev_spd.y)!=0 && (Math.sign(ball.spd.y)!=Math.sign(ball.prev_spd.y)))
+  if(ball.pos.y<0 || ball.pos.y>1000)
   {
-    ball.spd.y=0
+    if(ball.pos.y<0)
+    {
+      ball.pos.y=0
+    }
+    if(ball.pos.y>1000)
+    {
+      ball.pos.y=1000
+    }
+    ball.spd.y=-ball.spd.y
+    flipped=1
+  }
+  //Prevent jittering
+  if(flipped==0)
+  {
+    if(Math.sign(ball.prev_spd.x)!=0 && (Math.sign(ball.spd.x)!=Math.sign(ball.prev_spd.x)))
+    {
+      ball.spd.x=0
+    }
+    if(Math.sign(ball.prev_spd.y)!=0 && (Math.sign(ball.spd.y)!=Math.sign(ball.prev_spd.y)))
+    {
+      ball.spd.y=0
+    }
   }
   ball.prev_spd={x:ball.spd.x, y:ball.spd.y}
+
   //move ball
   ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
   ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
+
+
+
 
   console.clear()
   console.log(ball.spd)
