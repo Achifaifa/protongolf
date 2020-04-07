@@ -367,6 +367,15 @@ function stick_force()
   return {ft:force, fx:fx, fy:fy}
 }
 
+function get_friction(c)
+{
+  if(c.x<1 || c.x>999 || c.y<1 || c.y>999){return 50}
+
+  var fxcoord=parseInt(c.x/10)
+  var fycoord=parseInt(c.x/10)
+  return lvdata.fm[fycoord][fxcoord]
+}
+
 //rolling friction of """ball""" on """floor"""
 //F=uN (F=umg) (u: coefficient of friction, n:normal force)
 //F=u*p_mass*9.8. 
@@ -380,7 +389,7 @@ function friction()
   var frang=Math.atan2(ball.spd.y,ball.spd.x)
 
   //Calculate total friction
-  var tfforce=50*fric_const
+  var tfforce=get_friction(ball.pos)*fric_const
 
   //Decompose friction into x/y components
   var tfx=tfforce*Math.cos(frang)
@@ -492,11 +501,10 @@ function move_ball()
   if(distance(ball.pos, lvdata.hole)<10)
   {
     //Require low speed to enter in hole
-    if(Math.abs(ball.spd.x)<1000 && Math.abs(ball.spd.y)<1000)
+    if(Math.abs(ball.spd.x)<500 && Math.abs(ball.spd.y)<500)
     {
-      console.log("HOLE!",ball.spd)
       ball.spd={x:0, y:0}
-      ball.pos=lvdata.hole
+      ball.pos={x:lvdata.hole.x, y:lvdata.hole.y}
       lvdata.completed=1
       shooting=0
       shot=0
@@ -844,7 +852,7 @@ function mousedown(e)
         }
       }
     }
-    else if(mouse_coords.y<10 && shot==0)
+    else if(mouse_coords.y<10 && ball.spd.x==0 && ball.spd.y==0)
     {
       if(stick.start.x==0)
       {
