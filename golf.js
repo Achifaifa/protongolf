@@ -353,7 +353,7 @@ function friction()
   var frang=Math.atan2(ball.spd.y,ball.spd.x)
 
   //Calculate total friction
-  var tfforce=100*fric_const //Test u
+  var tfforce=50*fric_const //Test u
 
   //Decompose friction into x/y components
   var tfx=tfforce*Math.cos(frang)
@@ -409,11 +409,23 @@ function move_ball()
   //Update ball speed
   ball.spd.x+=acc_x 
   ball.spd.y+=acc_y
-  console.log(ball.spd)
+  //Prevent jittering
+  if(Math.sign(ball.prev_spd.x)!=0 && (Math.sign(ball.spd.x)!=Math.sign(ball.prev_spd.x)))
+  {
+    ball.spd.x=0
+  }
+  if(Math.sign(ball.prev_spd.y)!=0 && (Math.sign(ball.spd.y)!=Math.sign(ball.prev_spd.y)))
+  {
+    ball.spd.y=0
+  }
+  ball.prev_spd={x:ball.spd.x, y:ball.spd.y}
   //move ball
   ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
   ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
-  //Prevent jittering
+
+  console.clear()
+  console.log(ball.spd)
+
 }
 
 //Drawing
