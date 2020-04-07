@@ -485,8 +485,14 @@ function move_ball()
 
   if(distance(ball.pos, lvdata.hole)<10)
   {
-    ball.spd={x:0, y:0}
-    lvdata.completed=1
+    console.log("over hole", ball.spd)
+    //Require low speed to enter in hole
+    if(Math.abs(ball.spd.x)<1000 && Math.abs(ball.spd.y)<1000)
+    {
+      console.log("HOLE!",ball.spd)
+      ball.spd={x:0, y:0}
+      lvdata.completed=1
+    }
   }
 }
 
