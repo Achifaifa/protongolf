@@ -30,14 +30,34 @@ selected={x:-1, y:-1}
 
 ball={pos:{x:500,y:500}, spd:{x:0,y:0}, prev_spd:{x:0,y:0}}
 stick={start:{x:0,y:0}, end:{x:0,y:0}, pos:{x:0,y:0}, power:0, type:1}
+lvdata={hole:{x:0,y:0}, fm:[], obstacles:[]}
 shooting=0
 shot=0
-holes={current:1,total:18}
 score=Array(18).fill(0)
 shot_dis=0
 shot_deltax=0
 shot_deltay=0
 power_mov_mod=0
+
+holesdata=[
+{//Hole 1
+  ball:{x:150, y:850},
+  hole:{x:850, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:[]
+},
+]
+holes={current:1,total:holesdata.length}
+
+function loadlevel(lv)
+{
+  var lev=holesdata[lv-1]
+  ball.pos.x=lev.ball.x
+  ball.pos.y=lev.ball.y
+  lvdata.hole=lev.hole
+  lvdata.fm=lev.friction_matrix
+  lvdata.obstacles=lev.obstacles
+}
 
 //Mobile detection
 
@@ -413,28 +433,28 @@ function move_ball()
 
   //bouncing
   var flipped=0
-  if(ball.pos.x<0 || ball.pos.x>1000)
+  if(ball.pos.x<5 || ball.pos.x>995)
   {
     ball.spd.x=-ball.spd.x
     flipped=1
-    if(ball.pos.x<0)
+    if(ball.pos.x<5)
     {
-      ball.pos.x=0
+      ball.pos.x=5
     }
-    if(ball.pos.x>1000)
+    if(ball.pos.x>995)
     {
-      ball.pos.x=1000
+      ball.pos.x=995
     }
   }
-  if(ball.pos.y<0 || ball.pos.y>1000)
+  if(ball.pos.y<5 || ball.pos.y>995)
   {
-    if(ball.pos.y<0)
+    if(ball.pos.y<5)
     {
-      ball.pos.y=0
+      ball.pos.y=5
     }
-    if(ball.pos.y>1000)
+    if(ball.pos.y>995)
     {
-      ball.pos.y=1000
+      ball.pos.y=995
     }
     ball.spd.y=-ball.spd.y
     flipped=1
@@ -456,13 +476,6 @@ function move_ball()
   //move ball
   ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
   ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
-
-
-
-
-  console.clear()
-  console.log(ball.spd)
-
 }
 
 //Drawing
@@ -504,7 +517,7 @@ function draw_ball()
 
 function draw_hole()
 {
-  draw_circle(hole.x,hole.y,10)
+  draw_circle(lvdata.hole.x,lvdata.hole.y,10)
 }
 
 function draw_stick(x,y)
@@ -795,7 +808,7 @@ function mousedown(e)
         stick.type=mouse_coords.x
       }
     }
-    else if(mouse_coords.y<10)
+    else if(mouse_coords.y<10 && shot==0)
     {
       if(stick.start.x==0)
       {
@@ -816,7 +829,6 @@ function mousedown(e)
         power_mov_mod=(1100-stick.power)/30
         shot_deltax=(stick.end.x-stick.start.x)/power_mov_mod
         shot_deltay=(stick.end.y-stick.start.y)/power_mov_mod
-        console.log("bam!",parseInt(stick.power),"/1000")
       }
     }
   }
@@ -876,6 +888,6 @@ ctx.canvas.addEventListener("mousemove", dragmove, false)
 ctx.canvas.addEventListener("mousedown", mousedown, false)
 ctx.canvas.addEventListener("mouseup", mouseup, false)
 
-hole={x:700, y:300}
+loadlevel(1)
 
 ani=setInterval(main_loop, interval)
