@@ -45,6 +45,12 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:[]
 },
+{//Hole 2
+  ball:{x:500, y:850},
+  hole:{x:100, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:[]
+},
 ]
 holes={current:1,total:holesdata.length}
 
@@ -485,13 +491,17 @@ function move_ball()
 
   if(distance(ball.pos, lvdata.hole)<10)
   {
-    console.log("over hole", ball.spd)
     //Require low speed to enter in hole
     if(Math.abs(ball.spd.x)<1000 && Math.abs(ball.spd.y)<1000)
     {
       console.log("HOLE!",ball.spd)
       ball.spd={x:0, y:0}
+      ball.pos=lvdata.hole
       lvdata.completed=1
+      shooting=0
+      shot=0
+      stick.start={x:0, y:0}
+      stick.end={x:0, y:0}
     }
   }
 }
@@ -825,6 +835,14 @@ function mousedown(e)
       {
         stick.type=mouse_coords.x
       }
+      if(mouse_coords.x==9)
+      {
+        if(holes.current<holes.total)
+        {
+          loadlevel(holes.current+1)
+          holes.current+=1
+        }
+      }
     }
     else if(mouse_coords.y<10 && shot==0)
     {
@@ -865,8 +883,17 @@ function mousedown(e)
       {
         stick.start={x:0, y:0}
       }
-      
-      
+    }
+    if(mouse_coords.y==10)
+    {
+      if(mouse_coords.x==9)
+      {
+        if(holes.current>1)
+        {
+          loadlevel(holes.current-1)
+          holes.current-=1
+        }
+      }
     }
   }
   //middle click
