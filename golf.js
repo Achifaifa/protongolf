@@ -30,7 +30,7 @@ selected={x:-1, y:-1}
 
 ball={pos:{x:500,y:500}, spd:{x:0,y:0}, prev_spd:{x:0,y:0}}
 stick={start:{x:0,y:0}, end:{x:0,y:0}, pos:{x:0,y:0}, power:0, type:1}
-lvdata={hole:{x:0,y:0}, fm:[], obstacles:[]}
+lvdata={hole:{x:0,y:0}, fm:[], obstacles:[], completed:0}
 shooting=0
 shot=0
 score=Array(18).fill(0)
@@ -38,7 +38,6 @@ shot_dis=0
 shot_deltax=0
 shot_deltay=0
 power_mov_mod=0
-
 holesdata=[
 {//Hole 1
   ball:{x:150, y:850},
@@ -57,6 +56,7 @@ function loadlevel(lv)
   lvdata.hole=lev.hole
   lvdata.fm=lev.friction_matrix
   lvdata.obstacles=lev.obstacles
+  lvdata.completed=0
 }
 
 //Mobile detection
@@ -386,9 +386,13 @@ function friction()
 function environmental_force()
 {
   var eforce={fx:0, fy:0}
-  //TO-DO: Calculate force for simple walls
-  //TO-DO: Calculate force for constant magnetic fields
-  //TO-DO: Calculate force for point particles in field
+  //TO-DO: Calculate force for simple walls (???)
+
+  //TO-DO: Calculate force for constant magnetic fields (Field obstacles)
+
+  //TO-DO: Calculate force for point particles in field (point obstacles)
+
+  //friction over floor
   var fric=friction()
   eforce.fx+=fric.fx
   eforce.fy+=fric.fy
@@ -396,6 +400,7 @@ function environmental_force()
   return eforce
 }
 
+//Add all forces
 function force_on_ball()
 {
   var tforce={fx:0, fy:0}
@@ -471,11 +476,18 @@ function move_ball()
       ball.spd.y=0
     }
   }
+
   ball.prev_spd={x:ball.spd.x, y:ball.spd.y}
 
   //move ball
   ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
   ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
+
+  if(distance(ball.pos, lvdata.hole)<10)
+  {
+    ball.spd={x:0, y:0}
+    lvdata.completed=1
+  }
 }
 
 //Drawing
