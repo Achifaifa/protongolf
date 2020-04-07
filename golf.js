@@ -28,7 +28,7 @@ selected={x:-1, y:-1}
 
 //
 
-ball={pos:{x:500,y:500}, spd:{x:0,y:0}}
+ball={pos:{x:500,y:500}, spd:{x:0,y:0}, prev_spd:{x:0,y:0}}
 stick={start:{x:0,y:0}, end:{x:0,y:0}, pos:{x:0,y:0}, power:0, type:1}
 shooting=0
 shot=0
@@ -312,7 +312,9 @@ function distance(a,b)
 //Angle is in *radians*
 function angle(a,b)
 {
-  return Math.atan2(b.y-a.y,b.x-a.x)
+  var dx=b.x-a.x
+  var dy=b.y-a.y
+  return Math.atan2(dy,dx)
 }
 
 //ke*q1*q2
@@ -348,15 +350,14 @@ const fric_const=p_mass*9800000000//g in nm/s
 function friction()
 {
   //Calculate angle of movement
-  var frang=Math.atan2(-ball.spd.y,-ball.spd.x)
+  var frang=Math.atan2(ball.spd.y,ball.spd.x)
 
   //Calculate total friction
-  var tfforce=1*fric_const
+  var tfforce=100*fric_const //Test u
 
   //Decompose friction into x/y components
   var tfx=tfforce*Math.cos(frang)
   var tfy=tfforce*Math.sin(frang)
-
 
   return {fx:tfx, fy:tfy}
 }
@@ -371,7 +372,6 @@ function environmental_force()
   eforce.fx+=fric.fx
   eforce.fy+=fric.fy
   
-  console.log(eforce)
   return eforce
 }
 
@@ -409,9 +409,11 @@ function move_ball()
   //Update ball speed
   ball.spd.x+=acc_x 
   ball.spd.y+=acc_y
+  console.log(ball.spd)
   //move ball
   ball.pos.x+=(ball.spd.x/30)+(acc_x/2000)
   ball.pos.y+=(ball.spd.y/30)+(acc_y/2000)
+  //Prevent jittering
 }
 
 //Drawing
