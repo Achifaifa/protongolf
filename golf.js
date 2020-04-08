@@ -511,7 +511,7 @@ function environmental_force()
         if(it.type==2) {fbuffer.fx-=it.efield*ep_charge}
         if(it.type==3) {fbuffer.fy-=it.efield*ep_charge}
         if(it.type==4) {fbuffer.fx+=it.efield*ep_charge} 
-        if(it.type==5) {fbuffer.fx+=it.efield*ep_charge}
+        if(it.type==5) {fbuffer.fy+=it.efield*ep_charge}
         console.log(fbuffer)
       }
     }
@@ -781,13 +781,16 @@ function draw_obstacle(obs)
     }
     else
     {
+      draw_line(obs.pos.x+40,obs.pos.y+20,obs.pos.x+40,obs.pos.y+60)
       if(obs.type==3)
       {
-
+        draw_line(obs.pos.x+40,obs.pos.y+60,obs.pos.x+20,obs.pos.y+40)
+        draw_line(obs.pos.x+40,obs.pos.y+60,obs.pos.x+60,obs.pos.y+40)
       }
       else
       {
-        
+        draw_line(obs.pos.x+40,obs.pos.y+20,obs.pos.x+20,obs.pos.y+40)
+        draw_line(obs.pos.x+40,obs.pos.y+20,obs.pos.x+60,obs.pos.y+40)
       }
     }
     ctx.strokeRect(obs.pos.x,obs.pos.y,obs.size.x,obs.size.y)
