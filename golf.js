@@ -62,7 +62,7 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:
   [
-    {type:1, pos:{x:500,y:500}, size:{x:0,y:0}}
+    {type:1, pos:{x:500,y:500}},
   ]
 },
 {//Hole 3, negative point obstacle
@@ -71,7 +71,7 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:
   [
-    {type:0, pos:{x:500,y:500}, size:{x:0,y:0}}
+    {type:0, pos:{x:500,y:500}},
   ]
 },
 {//Hole 4, magnetic obstacle
@@ -80,7 +80,7 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:
   [
-    {type:7, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15}
+    {type:7, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15},
   ]
 },
 {//Hole 5, Electric obstacle
@@ -89,14 +89,33 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:
   [
-    {type:2, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000}
+    {type:2, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000},
   ]
 },
 //Hole 6, point particle inside magnetic obstacle
 //Hole 7, linear accelerator
 //Hole 8, linear accelerator + magnetic field at output
-//Hole 9, multiple point obstacles
-//Hole 10, electric and magnetic fields
+{//Hole 9, multiple point obstacles
+  ball:{x:150, y:850},
+  hole:{x:850, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:0, pos:{x:50,y:50}},
+    {type:1, pos:{x:950,y:950}},
+    {type:0, pos:{x:750,y:890}},
+  ]
+},
+{//Hole 10, electric and magnetic fields
+  ball:{x:850, y:850},
+  hole:{x:150, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:2, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000},
+    {type:7, pos:{x:0,y:400}, size:{x:998,y:200}, mfield:15},
+  ]
+},
 //Hole 11, magnetic field before linear accelerator
 //Hole 12, maze (If walls work)
 //Hole 13, multiple particle accelerators
