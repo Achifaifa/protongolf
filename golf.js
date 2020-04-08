@@ -92,7 +92,16 @@ holesdata=[
     {type:2, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000},
   ]
 },
-//Hole 6, point particle inside magnetic obstacle
+{//Hole 6, point particle inside magnetic obstacle
+  ball:{x:350, y:850},
+  hole:{x:850, y:600},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:7, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15},
+    {type:1, pos:{x:500,y:500}},
+  ]
+},
 //Hole 7, linear accelerator
 //Hole 8, linear accelerator + magnetic field at output
 {//Hole 9, multiple point obstacles
@@ -119,9 +128,37 @@ holesdata=[
 //Hole 11, magnetic field before linear accelerator
 //Hole 12, maze (If walls work)
 //Hole 13, multiple particle accelerators
-//Hole 14, alternating electric fields
-//Hole 15, alternating magnetic fields
-//Hole 16, hole surrounded by charges
+{//Hole 14, alternating electric fields
+  ball:{x:350, y:850},
+  hole:{x:950, y:50},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:3, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000},
+    {type:5, pos:{x:600,y:0}, size:{x:200,y:998}, efield:10000},
+  ]
+},
+{//Hole 15, alternating magnetic fields
+  ball:{x:350, y:850},
+  hole:{x:950, y:50},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:6, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15},
+    {type:7, pos:{x:600,y:0}, size:{x:200,y:998}, mfield:15},
+  ]
+},
+{//Hole 16, hole surrounded by charges
+  ball:{x:150, y:850},
+  hole:{x:500, y:260},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:1, pos:{x:500,y:10}},
+    {type:1, pos:{x:750,y:260}},
+    {type:1, pos:{x:250,y:260}},
+  ]
+},
 //Hole 17, hole inside accelerated field
 //Hole 18, everything
 ]
@@ -508,12 +545,12 @@ function environmental_force()
     var it=obss[i]
     var fbuffer={fx:0, fy:0}
     //e-
-    if(it.type==0)
+    if(it.type==0 && distance(ball.pos,it.pos)<250)
     {
       fbuffer=point_force({pos:ball.pos,c:ep_charge}, {pos:it.pos,c:-ep_charge})[1]
     }
     //p+
-    if(it.type==1)
+    if(it.type==1 && distance(ball.pos,it.pos)<250)
     {
       fbuffer=point_force({pos:ball.pos,c:ep_charge}, {pos:it.pos,c:ep_charge})[1]
     }
