@@ -90,7 +90,7 @@ holesdata=[
 //Hole 9, multiple point obstacles
 //Hole 10, electric and magnetic fields
 //Hole 11, magnetic field before linear accelerator
-//Hole 12, maze
+//Hole 12, maze (If walls work)
 //Hole 13, multiple particle accelerators
 //Hole 14, alternating electric fields
 //Hole 15, alternating magnetic fields
@@ -461,17 +461,13 @@ function friction()
   var tfx=tfforce*Math.cos(frang)
   var tfy=tfforce*Math.sin(frang)
 
+  //Prevent wild bouncing
+  if(ball.spd.x>1000 || ball.spd.y>1000)
+  {
+    tfx*=1+Math.pow(Math.ceil(ball.spd.x/1000),2)
+    tfy*=1+Math.pow(Math.ceil(ball.spd.y/1000),2)
+  }
   return {fx:tfx, fy:tfy}
-}
-
-function electricf_force()
-{
-
-}
-
-function magneticf_force()
-{
-  
 }
 
 function environmental_force()
@@ -517,7 +513,6 @@ function environmental_force()
       {
         fbuffer.fx+=ep_charge*ball.spd.y*it.mfield*mod
         fbuffer.fy+=ep_charge*(-ball.spd.x)*it.mfield*mod
-        console.log(fbuffer)      
       }
     }
     //particle accelerator (right, up, left, down)
