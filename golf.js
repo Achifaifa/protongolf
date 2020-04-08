@@ -38,6 +38,17 @@ shot_dis=0
 shot_deltax=0
 shot_deltay=0
 power_mov_mod=0
+
+// Obstacle specification
+// {type:0, pos:{x:0,y:0}, size:{x:0,y:0}, charge:0, mfield:0, efield:0}
+// keys are optional and depend on obstacle
+// 0: negative point
+// 1: positive point
+// 2-5: electric field (right, up, left, down)
+// 6-7: magnetic field (towards player, away from player)
+// 8-11: particle accelerator (lineal), (right, up, left, down)
+// 99: wall (?)
+
 holesdata=[
 {//Hole 1
   ball:{x:150, y:850},
@@ -45,12 +56,47 @@ holesdata=[
   friction_matrix:Array(100).fill(Array(100).fill(50)),
   obstacles:[]
 },
-{//Hole 2
+{//Hole 2, positive point obstacle
   ball:{x:500, y:850},
   hole:{x:100, y:150},
   friction_matrix:Array(100).fill(Array(100).fill(50)),
-  obstacles:[]
+  obstacles:
+  [
+    {type:1, pos:{x:500,y:500}, size:{x:0,y:0}}
+  ]
 },
+{//Hole 3, negative point obstacle
+  ball:{x:500, y:850},
+  hole:{x:900, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:0, pos:{x:500,y:500}, size:{x:0,y:0}}
+  ]
+},
+{//Hole 4, magnetic obstacle
+  ball:{x:150, y:850},
+  hole:{x:850, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:7, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15}
+  ]
+},
+//Hole 5, Electric obstacle
+//Hole 6, point particle inside magnetic obstacle
+//Hole 7, linear accelerator
+//Hole 8, linear accelerator + magnetic field at output
+//Hole 9, multiple point obstacles
+//Hole 10, electric and magnetic fields
+//Hole 11, magnetic field before linear accelerator
+//Hole 12, maze
+//Hole 13, multiple particle accelerators
+//Hole 14, alternating electric fields
+//Hole 15, alternating magnetic fields
+//Hole 16, hole surrounded by charges
+//Hole 17, hole inside accelerated field
+//Hole 18, everything
 ]
 holes={current:1,total:holesdata.length}
 
@@ -151,10 +197,12 @@ function fill_circle(x,y,size,colour="white",alpha=1)
   ctx.beginPath();
   ctx.arc(x, y, size, 0, 2*Math.PI, true);
   ctx.fillStyle=colour;
+  ctx.strokeStyle=colour;
   ctx.fill();
   ctx.stroke();
   ctx.globalAlpha=pa;
   ctx.fillStyle="white"
+  ctx.strokeStyle="white"
 }
 
 function pixel_to_coord(px)
@@ -344,7 +392,9 @@ function angle(a,b)
 }
 
 //ke*q1*q2
-const stick_ball_data=Number("9E9")*Number("1.6E-19")*Number("1.6E-19")
+const ke=Number("9E9")
+const ep_charge=Number("1.6E-19")
+const stick_ball_data=ke*Number("1.6E-19")*Number("1.6E-19")
 function stick_force()
 {
   //function for stick and ball only. Returns Newtons on ball.
@@ -364,7 +414,23 @@ function stick_force()
   var fx=force*Math.cos(vang)
   var fy=force*Math.sin(vang)
 
-  return {ft:force, fx:fx, fy:fy}
+  return {fx:fx, fy:fy}
+}
+
+//Like stick_force, but requires more data
+//Returns force (x,y) on both objects
+//A and B are particles w/ pos and charge: {pos:{x:0,y:0}, c:0}
+function point_force(a,b)
+{
+  var dist=distance(a.pos,b.pos)/1000000000
+  var force=(a.c*b.c*ke)/Math.pow(dist,2)
+
+  var vang=angle(a.pos,b.pos)
+
+  var fx=force*Math.cos(vang)
+  var fy=force*Math.sin(vang)
+
+  return[{fx:-fx,fy:-fy}, {fx:fx,fy:fy}]
 }
 
 function get_friction(c)
@@ -398,14 +464,75 @@ function friction()
   return {fx:tfx, fy:tfy}
 }
 
+function electricf_force()
+{
+
+}
+
+function magneticf_force()
+{
+  
+}
+
 function environmental_force()
 {
   var eforce={fx:0, fy:0}
-  //TO-DO: Calculate force for simple walls (???)
 
-  //TO-DO: Calculate force for constant magnetic fields (Field obstacles)
+  //force for obstacles
+  var obss=lvdata.obstacles
+  for(var i=0; i<obss.length; i++)
+  {
+    var it=obss[i]
+    var fbuffer={fx:0, fy:0}
+    //e-
+    if(it.type==0)
+    {
+      fbuffer=point_force({pos:ball.pos,c:ep_charge}, {pos:it.pos,c:-ep_charge})[1]
+    }
+    //p+
+    if(it.type==1)
+    {
+      fbuffer=point_force({pos:ball.pos,c:ep_charge}, {pos:it.pos,c:ep_charge})[1]
+    }
+    //electric field (right, up, left, down)
+    if([2,3,4,5].includes(it.type))
+    {
 
-  //TO-DO: Calculate force for point particles in field (point obstacles)
+    }
+    //magnetic field (towards player, away from player)
+    //Lorentz forces in x and y
+    //Fx=q vy Bz
+    //Fy=q -vx Bz
+    //Full formula is F=q(E+v x B) but ain't nobody got time for that
+    if([6,7].includes(it.type))
+    {
+      var mod=-1
+      if(it.type==7){mod=1}
+
+      if
+      (
+        (ball.pos.x>it.pos.x && ball.pos.x<it.pos.x+it.size.x)
+      &&(ball.pos.y>it.pos.y && ball.pos.y<it.pos.y+it.size.y)
+      )
+      {
+        fbuffer.fx+=ep_charge*ball.spd.y*it.mfield*mod
+        fbuffer.fy+=ep_charge*(-ball.spd.x)*it.mfield*mod
+        console.log(fbuffer)      
+      }
+    }
+    //particle accelerator (right, up, left, down)
+    if([8,9,10,11].includes(it.type))
+    {
+
+    }
+    //wall (?)
+    if(it.type==99)
+    {
+
+    }
+    eforce.fx+=fbuffer.fx 
+    eforce.fy+=fbuffer.fy
+  }
 
   //friction over floor
   var fric=friction()
@@ -602,9 +729,64 @@ function draw_ui()
   ctx.fillText(holes.total,955,1070)
 }
 
+
+
+//
+// {type:0, pos:{x:0,y:0}, size:{x:0,y:0}, charge:0, mfield:0, efield:0}
+function draw_obstacle(obs)
+{
+  //e-, blue dot
+  if(obs.type==0)
+  {
+    fill_circle(obs.pos.x,obs.pos.y,5,"blue")
+  }
+  //p+, yellow dot
+  if(obs.type==1)
+  {
+    fill_circle(obs.pos.x,obs.pos.y,5,"yellow")
+  }
+  //electric field (right, up, left, down)
+  if([2,3,4,5].includes(obs.type))
+  {
+
+  }
+  //magnetic field (towards player, away from player)
+  if([6,7].includes(obs.type))
+  {
+    ctx.strokeStyle="blue"
+    draw_circle(obs.pos.x+40,obs.pos.y+40,20,"blue")
+    if(obs.type==6)
+    {
+      draw_point(obs.pos.x+40,obs.pos.y+40)
+    }
+    else if(obs.type==7)
+    {
+      draw_line(obs.pos.x+30,obs.pos.y+30,obs.pos.x+50, obs.pos.y+50)
+      draw_line(obs.pos.x+30,obs.pos.y+50,obs.pos.x+50, obs.pos.y+30)
+    }
+    ctx.strokeRect(obs.pos.x,obs.pos.y,obs.size.x,obs.size.y)
+    ctx.strokeStyle="white"
+  }
+  //particle accelerator (right, up, left, down)
+  if([8,9,10,11].includes(obs.type))
+  {
+
+  }
+  //wall (?)
+  if(obs.type==99)
+  {
+
+  }
+
+}
+
 function main_loop()
 {
   draw_ui()
+  for(var i=0; i<lvdata.obstacles.length; i++)
+  {
+    draw_obstacle(lvdata.obstacles[i])
+  }
   draw_tgt(mouse_pos.x,mouse_pos.y)
   draw_ball()
   draw_hole()
