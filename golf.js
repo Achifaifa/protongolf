@@ -737,20 +737,18 @@ function draw_ui()
   if(stick.type==1){ctx.strokeStyle="green"}
   ctx.strokeRect(110,1010,80,80)
   ctx.strokeStyle="white"
-  if(stick.type==2){ctx.strokeStyle="green"}
+  if(stick.type==-1){ctx.strokeStyle="green"}
   ctx.strokeRect(210,1010,80,80)
   ctx.strokeStyle="white"
-  if(stick.type==3){ctx.strokeStyle="green"}
-  ctx.strokeRect(310,1010,80,80)
-  ctx.strokeStyle="white"
+  // if(stick.type==3){ctx.strokeStyle="green"}
+  // ctx.strokeRect(310,1010,80,80)
+  // ctx.strokeStyle="white"
 
   ctx.fillText("MENU",50,1055)
-  ctx.fillText("SMOL",150,1050)
-  ctx.fillText("+",150,1070)
-  ctx.fillText("NORM",250,1050)
-  ctx.fillText("++",250,1070)
-  ctx.fillText("BIG",350,1050)
-  ctx.fillText("+++",350,1070)
+  ctx.fillText("p+",150,1055)
+  ctx.fillText("e-",250,1055)
+  // ctx.fillText("BIG",350,1050)
+  // ctx.fillText("+++",350,1070)
   draw_power()
 
   ctx.strokeRect(910,1010,80,80)
@@ -1086,9 +1084,13 @@ function mousedown(e)
       {
         console.log("menu")
       }
-      if(mouse_coords.x>0 && mouse_coords.x<4)
+      if(mouse_coords.x==1)
       {
-        stick.type=mouse_coords.x
+        stick.type=1
+      }
+      if(mouse_coords.x==2)
+      {
+        stick.type=-1
       }
       if(mouse_coords.x==9)
       {
