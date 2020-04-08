@@ -83,7 +83,15 @@ holesdata=[
     {type:7, pos:{x:400,y:0}, size:{x:200,y:998}, mfield:15}
   ]
 },
-//Hole 5, Electric obstacle
+{//Hole 5, Electric obstacle
+  ball:{x:850, y:850},
+  hole:{x:150, y:150},
+  friction_matrix:Array(100).fill(Array(100).fill(50)),
+  obstacles:
+  [
+    {type:2, pos:{x:400,y:0}, size:{x:200,y:998}, efield:10000}
+  ]
+},
 //Hole 6, point particle inside magnetic obstacle
 //Hole 7, linear accelerator
 //Hole 8, linear accelerator + magnetic field at output
@@ -491,9 +499,21 @@ function environmental_force()
       fbuffer=point_force({pos:ball.pos,c:ep_charge}, {pos:it.pos,c:ep_charge})[1]
     }
     //electric field (right, up, left, down)
+    //It's multiplying stuff
     if([2,3,4,5].includes(it.type))
     {
-
+      if
+      (
+        (ball.pos.x>it.pos.x && ball.pos.x<it.pos.x+it.size.x)
+      &&(ball.pos.y>it.pos.y && ball.pos.y<it.pos.y+it.size.y)
+      )
+      {
+        if(it.type==2) {fbuffer.fx-=it.efield*ep_charge}
+        if(it.type==3) {fbuffer.fy-=it.efield*ep_charge}
+        if(it.type==4) {fbuffer.fx+=it.efield*ep_charge} 
+        if(it.type==5) {fbuffer.fx+=it.efield*ep_charge}
+        console.log(fbuffer)
+      }
     }
     //magnetic field (towards player, away from player)
     //Lorentz forces in x and y
@@ -743,13 +763,41 @@ function draw_obstacle(obs)
   //electric field (right, up, left, down)
   if([2,3,4,5].includes(obs.type))
   {
+    ctx.strokeStyle="yellow"
 
+    if(obs.type%2==0)
+    {
+      draw_line(obs.pos.x+20,obs.pos.y+40,obs.pos.x+60,obs.pos.y+40)
+      if(obs.type==2)
+      {
+        draw_line(obs.pos.x+60,obs.pos.y+40,obs.pos.x+40,obs.pos.y+20)
+        draw_line(obs.pos.x+60,obs.pos.y+40,obs.pos.x+40,obs.pos.y+60)
+      }
+      else
+      {
+        draw_line(obs.pos.x+20,obs.pos.y+40,obs.pos.x+40,obs.pos.y+20)
+        draw_line(obs.pos.x+20,obs.pos.y+40,obs.pos.x+40,obs.pos.y+60)
+      }
+    }
+    else
+    {
+      if(obs.type==3)
+      {
+
+      }
+      else
+      {
+        
+      }
+    }
+    ctx.strokeRect(obs.pos.x,obs.pos.y,obs.size.x,obs.size.y)
+    ctx.strokeStyle="white"
   }
   //magnetic field (towards player, away from player)
   if([6,7].includes(obs.type))
   {
-    ctx.strokeStyle="blue"
-    draw_circle(obs.pos.x+40,obs.pos.y+40,20,"blue")
+    ctx.strokeStyle="#9900ff"
+    draw_circle(obs.pos.x+40,obs.pos.y+40,20,"#9900ff")
     if(obs.type==6)
     {
       draw_point(obs.pos.x+40,obs.pos.y+40)
