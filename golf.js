@@ -190,17 +190,17 @@ if(window.innerWidth>window.innerHeight)
 
 //Save/Load game
 
-// var storedlevel=window.localStorage.getItem('maxlevel', levels_completed);
-// if(storedlevel==null)
-// {
-//   window.localStorage.setItem('maxlevel', levels_completed)
-//   window.localStorage.setItem('score', JSON.stringify(score))
-// }
-// else
-// {
-//   levels_completed=storedlevel
-//   score=JSON.parse(window.localStorage.getItem('score'))
-// }
+var storedlevel=window.localStorage.getItem('clevel', holes.current);
+if(storedlevel==null)
+{
+  window.localStorage.setItem('clevel', holes.current)
+  window.localStorage.setItem('score', JSON.stringify(score))
+}
+else
+{
+  holes.current=storedlevel
+  score=JSON.parse(window.localStorage.getItem('score'))
+}
 
 //Audio management
 
@@ -332,14 +332,7 @@ function menu()
 
   ctx.font="bold 50px quizma";
   ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(350))+")";
-  if(levels_completed==0)
-  {
-    ctx.fillText("New game",500,360);
-  }
-  else
-  {
-    ctx.fillText("Continue",500,360)
-  }
+  ctx.fillText("Play",500,360);
   ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(450))+")";
   ctx.fillText("Scores",500,460);
   // ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(550))+")";
@@ -471,7 +464,6 @@ function stick_force()
 
   //Force magnitude:
   var dist_m=distance(ball.pos,stick.pos)/1000000000
-  console.log(dist_m)
 
   //Prevent slingshots
   if(dist_m<Number("20e-9"))
@@ -580,7 +572,6 @@ function environmental_force()
         if(it.type==3) {fbuffer.fy-=it.efield*ep_charge}
         if(it.type==4) {fbuffer.fx+=it.efield*ep_charge} 
         if(it.type==5) {fbuffer.fy+=it.efield*ep_charge}
-        console.log(fbuffer)
       }
     }
     //magnetic field (towards player, away from player)
@@ -956,6 +947,7 @@ function skip_to_menu(e,mute=0)
   anistep=1
   ai=0
   ctx.canvas.addEventListener("click", main_menu_listener, false);
+  document.getElementById('golf').style.cursor = "auto";
   ani=setInterval(menu, interval, 1)
   ctx.canvas.removeEventListener("click", skip_to_menu);
 }
@@ -991,22 +983,13 @@ function main_menu_listener()
     clearTimeout(ani);
     if (menu_option==1) 
     {
-      var inilevel=0
-      if(levels_completed>0)
-      {
-        inilevel=levels_completed
-        if(inilevel>=total_levels)
-        {
-          inilevel=total_levels-1
-        }
-      }
-      load_level(inilevel)
       au.play("menu_select")
-      //ctx.canvas.addEventListener("click", main_game_listener, false);
-      ctx.canvas.addEventListener("mousedown", mousedown);
-      ctx.canvas.addEventListener("mouseup", mouseup);
-      ctx.canvas.addEventListener("mousemove", dragmove);
-      ani=setInterval(main_loop, interval, false);
+      loadlevel(holes.current)
+      document.getElementById('golf').style.cursor = "none";
+      ctx.canvas.addEventListener("mousemove", dragmove, false)
+      ctx.canvas.addEventListener("mousedown", mousedown, false)
+      ctx.canvas.addEventListener("mouseup", mouseup, false)
+      ani=setInterval(main_loop, interval)
     }
     if (menu_option==2){
       au.play("menu_select")
@@ -1131,7 +1114,10 @@ function mousedown(e)
     {
       if(mouse_coords.x==0)
       {
-        console.log("menu")
+        ctx.canvas.removeEventListener("mousemove", dragmove)
+        ctx.canvas.removeEventListener("mousedown", mousedown)
+        ctx.canvas.removeEventListener("mouseup", mouseup)
+        skip_to_menu()
       }
       if(mouse_coords.x==1)
       {
@@ -1147,6 +1133,7 @@ function mousedown(e)
         {
           loadlevel(holes.current+1)
           holes.current+=1
+          window.localStorage.setItem('clevel', holes.current)
         }
       }
     }
@@ -1199,6 +1186,7 @@ function mousedown(e)
         {
           loadlevel(holes.current-1)
           holes.current-=1
+          window.localStorage.setItem('clevel', holes.current)
         }
       }
     }
@@ -1228,18 +1216,6 @@ ctx.canvas.addEventListener('mousemove', function(e){
 
 //Main listener
 
-//ctx.canvas.addEventListener("click", skip_to_menu);
-//loader()
-//ani=setInterval(logo_animation, interval, 1);
-
-
-//test zone
-
-document.getElementById('golf').style.cursor = "none";
-ctx.canvas.addEventListener("mousemove", dragmove, false)
-ctx.canvas.addEventListener("mousedown", mousedown, false)
-ctx.canvas.addEventListener("mouseup", mouseup, false)
-
-loadlevel(1)
-
-ani=setInterval(main_loop, interval)
+ctx.canvas.addEventListener("click", skip_to_menu);
+loader()
+ani=setInterval(logo_animation, interval, 1);
