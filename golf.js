@@ -471,6 +471,13 @@ function stick_force()
 
   //Force magnitude:
   var dist_m=distance(ball.pos,stick.pos)/1000000000
+  console.log(dist_m)
+
+  //Prevent slingshots
+  if(dist_m<Number("20e-9"))
+  {
+    return {fx:0,fy:0}
+  }
   var force=(stick_ball_data*stick.type)/Math.pow(dist_m,2)
 
   //Force component in x and y
@@ -487,6 +494,11 @@ function stick_force()
 function point_force(a,b)
 {
   var dist=distance(a.pos,b.pos)/1000000000
+  //Prevent slingshots
+  if(dist<Number("50E-9"))
+  {
+    return[{fx:0,fy:0}, {fx:0,fy:0}]
+  }
   var force=(a.c*b.c*ke)/Math.pow(dist,2)
 
   var vang=angle(a.pos,b.pos)
@@ -653,7 +665,7 @@ function move_ball()
   var flipped=0
   if(ball.pos.x<5 || ball.pos.x>995)
   {
-    ball.spd.x=-ball.spd.x
+    ball.spd.x*=-1
     flipped=1
     if(ball.pos.x<5)
     {
@@ -666,6 +678,8 @@ function move_ball()
   }
   if(ball.pos.y<5 || ball.pos.y>995)
   {
+    ball.spd.y*=-1
+    flipped=1
     if(ball.pos.y<5)
     {
       ball.pos.y=5
@@ -674,8 +688,6 @@ function move_ball()
     {
       ball.pos.y=995
     }
-    ball.spd.y=-ball.spd.y
-    flipped=1
   }
   //Prevent jittering
   if(flipped==0)
@@ -900,26 +912,25 @@ function main_loop()
     draw_point(stick.end.x,stick.end.y)
     draw_line(stick.start.x,stick.start.y,stick.end.x,stick.end.y)
   }
-
   if(shooting!=0 && shot==0)
   {
     stick.power+=((stick.power/4)+20)*shooting
     if(stick.power>1000){shooting=-1; stick.power=999}
     else if(stick.power<0){shooting=1; stick.power=1}
   }
-
   if(shot>0)
   {
+    draw_line(stick.start.x,stick.start.y,stick.end.x,stick.end.y)
     draw_stick(stick.start.x+shot_deltax*shot,stick.start.y+shot_deltay*shot)
     stick.pos.x+=shot_deltax
     stick.pos.y+=shot_deltay
-    move_ball()
-
     shot+=1
+
+    //Reset shot if stick on end position
     if
     (
-      ((stick.start.x<stick.end.x) && (stick.end.x<stick.start.x+shot_deltax*shot)) 
-    ||((stick.start.x>stick.end.x) && (stick.end.x>stick.start.x+shot_deltay*shot))
+      (Math.abs(stick.end.x-stick.pos.x)<5)
+    ||(Math.abs(stick.end.y-stick.pos.y)<5)
     )
     {
       shot=0
@@ -928,8 +939,9 @@ function main_loop()
       stick.start={x:0, y:0}
       stick.end={x:0, y:0}
     }
+    move_ball()
   }
-  if(ball.spd.x!=0 || ball.spd.y!=0)
+  if(ball.spd.x!=0 || ball.spd.y!=0 && shot==0)
   {
     move_ball()
   }
@@ -1154,11 +1166,12 @@ function mousedown(e)
       else if(shooting!=0 && shot==0)
       {
         shot=1
-        stick.pos=stick.start
+        stick.pos={x:stick.start.x, y:stick.start.y}
         shot_dis=distance(stick.start,stick.end)
         power_mov_mod=(1100-stick.power)/30
         shot_deltax=(stick.end.x-stick.start.x)/power_mov_mod
         shot_deltay=(stick.end.y-stick.start.y)/power_mov_mod
+        move_ball()
       }
     }
   }
