@@ -304,10 +304,10 @@ function logo_animation(i)
 function title_animation(i)
 {
   ctx.clearRect(0,0,1000,1000)
-  ctx.font="100px spaceage";
+  ctx.font="100px proton";
   ctx.fillStyle="rgba(255,255,255,"+(anistep/80)+")";
   ctx.textAlign="center"
-  ctx.fillText("Laserworks",500,500);
+  ctx.fillText("ProtonGolf",500,500);
   if (anistep==80)
   {
     clearTimeout(ani);
@@ -327,14 +327,14 @@ function menu()
 
   ctx.fillStyle="rgba(255,255,255,"+malpha+")";
   ctx.textAlign="center";
-  ctx.font="100px spaceage";
-  ctx.fillText("Golf!",500,160);
+  ctx.font="100px proton";
+  ctx.fillText("ProtonGolf",500,160);
 
   ctx.font="bold 50px quizma";
   ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(350))+")";
   ctx.fillText("Play",500,360);
-  ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(450))+")";
-  ctx.fillText("Scores",500,460);
+  // ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(450))+")";
+  // ctx.fillText("Scores",500,460);
   // ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(550))+")";
   // ctx.fillText("Tutorial",500,560);
   ctx.fillStyle="rgba(255,255,255,"+(30*malpha/menu_alpha(750))+")";
@@ -353,11 +353,11 @@ function credits()
 
   ctx.fillStyle="rgba(255,255,255,"+calpha+")";
   ctx.textAlign="center";
-  ctx.font="100px spaceage";
-  ctx.fillText("laserworks",500,160);
+  ctx.font="100px proton";
+  ctx.fillText("ProtonGolf",500,160);
   ctx.textAlign="end"
-  ctx.font="60px quizma";
-  ctx.fillText("Credits",950,200);
+  ctx.font="50px quizma";
+  ctx.fillText("Credits",755,210);
 
   
   ctx.font="bold 50px quizma";
@@ -369,22 +369,22 @@ function credits()
 
 
   ctx.textAlign="center"
-  ctx.fillText("Special Thanks",500,760)
+  // ctx.fillText("Special Thanks",500,760)
   ctx.fillStyle="rgba(255,255,255,"+(30*calpha/menu_alpha(950))+")";
   ctx.fillText("Back",500,960);
 
-  ctx.fillStyle="white"
-  ctx.font="20px quizma"
-  ctx.fillText("❤",400,860)
-  ctx.fillText("❤",600,860)
-  ctx.font="45px quizma";
+  // ctx.fillStyle="white"
+  // ctx.font="20px quizma"
+  // ctx.fillText("❤",400,860)
+  // ctx.fillText("❤",600,860)
+  // ctx.font="45px quizma";
   
-  ctx.fillText("Lea",500,860)
-  ctx.textAlign="start"
-  ctx.fillText("q3muyq3",650,860)
-  ctx.textAlign="end"
-  ctx.fillText("Klon",350,860)
-  ctx.textAlign="center"
+  // ctx.fillText("Lea",500,860)
+  // ctx.textAlign="start"
+  // ctx.fillText("q3muyq3",650,860)
+  // ctx.textAlign="end"
+  // ctx.fillText("Klon",350,860)
+  // ctx.textAlign="center"
 
   ctx.fillStyle="rgba(255,255,255,"+(30*calpha/menu_alpha(350))+")";
   ctx.fillText("Achifaifa",500,360);
@@ -393,7 +393,7 @@ function credits()
   ctx.fillStyle="rgba(255,255,255,"+(50*calpha/menu_alpha(550))+")";
   ctx.fillText("Studio Typo",500,560);
   ctx.fillStyle="rgba(255,255,255,"+(50*calpha/menu_alpha(650))+")";
-  ctx.fillText("Justin Callaghan",500,660);
+  ctx.fillText("Patrick Giasson",500,660);
   
 
   if (anistep<30){anistep++}
@@ -407,11 +407,11 @@ function settings()
 
   ctx.fillStyle="rgba(255,255,255,"+salpha+")";
   ctx.textAlign="center";
-  ctx.font="100px spaceage";
-  ctx.fillText("laserworks",500,160);
+  ctx.font="100px proton";
+  ctx.fillText("ProtonGolf",500,160);
   ctx.textAlign="end"
   ctx.font="60px quizma";
-  ctx.fillText("Settings",950,200);
+  ctx.fillText("Settings",805,210);
 
   ctx.textAlign="center"
   ctx.fillStyle="rgba(255,255,255,"+(30*salpha/menu_alpha(400))+")";
@@ -974,7 +974,7 @@ function update_click_coords()
 
 function main_menu_listener()
 {  
-  valid_options=[1,2,5,6]
+  valid_options=[1,5,6]
 
   if (valid_options.includes(menu_option))
   {
@@ -1076,7 +1076,7 @@ function credits_menu_listener()
     if (menu_option==4)
     {
       au.play("menu_option")
-      window.open('https://fonts.webtoolhub.com/font-n29145-space-age.aspx?lic=1')
+      window.open('https://www.wfonts.com/font/proton')
     }    
     if (menu_option==7)
     {
